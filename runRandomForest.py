@@ -8,7 +8,7 @@ def randomForestDiabetes():
     print("\n\nRandom Forest on Pima Indians Diabetes dataset\n")
 
     # Source file location
-    file_orig = "pima-indians-diabetes.csv"
+    file_orig = "data/pima-indians-diabetes.csv"
 
     # Prepare and format data
     df, file_loc = dp.DataPrep.prepare_data(file_orig, label_col_index=2, cols_to_encode=[9,10])
@@ -26,7 +26,7 @@ def randomForestBreastCancer():
     print("\n\nRandom Forest on Wisconsin Breast Prognostic dataset\n")
 
     # Source file location
-    file_orig = "Wisconsin_breast_prognostic.csv"
+    file_orig = "data/Wisconsin_breast_prognostic.csv"
     
     # File already formatted
     file_loc = file_orig

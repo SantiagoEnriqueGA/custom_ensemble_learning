@@ -70,7 +70,8 @@ class DataPrep(object):
         df = df[[c for c in df if c not in [label_col]] + [label_col]]
 
         if write_to_csv:
-            DataPrep.write_data(df, "prepared_" + csv_file)
-            return df, "prepared_" + csv_file
+            prepared_csv_file = csv_file.replace('.csv', '_prepared.csv')
+            DataPrep.write_data(df, prepared_csv_file)
+            return df, prepared_csv_file
 
         return df, "N/A"
