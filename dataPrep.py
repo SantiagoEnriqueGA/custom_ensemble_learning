@@ -62,12 +62,14 @@ class DataPrep(object):
         # Load the CSV file into a pandas DataFrame
         df = pd.read_csv(csv_file)
 
+        # Extarct Label column to variable
+        label_col = df.columns[label_col_index]
+
         # One-hot-encode non-numerical columns
         df = DataPrep.one_hot_encode(df, cols_to_encode)
 
-        # Move the label column to the end
-        label_col = df.columns[label_col_index]
-        df = df[[c for c in df if c not in [label_col]] + [label_col]]
+        # Move the label column from start to the end
+        df = pd.concat([df.drop(label_col, axis=1), df[[label_col]]], axis=1)
 
         if write_to_csv:
             prepared_csv_file = csv_file.replace('.csv', '_prepared.csv')
@@ -75,3 +77,4 @@ class DataPrep(object):
             return df, prepared_csv_file
 
         return df, "N/A"
+        

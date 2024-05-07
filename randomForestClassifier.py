@@ -1,13 +1,11 @@
 """
-Implementation of a random forest classifier. The performance of the classifier is evaluated via the out-of-bag (OOB) error estimate. 
-Used on dataset wisconsin_breast_prognostic.csv :
-	Features (Attributes) were computed from a digitized image of a fine needle aspirate (FNA) of a breast mass.  
-	They describe characteristics of the cell nuclei present in the image.   
-	Each row describes one patient (a data point, or data record) and each row includes 31 columns.  
-	The first 30 columns are attributes.  
-	The 31st (last column) is the label.  
-	The value one and zero indicates whether the cancer is malignant or benign.  
-Model performs binary classification on the dataset to determine if a particular cancer is benign or malignant. 
+This module contains the implementation of a Random Forest Classifier.
+
+The module includes the following classes:
+- Utility: A utility class for computing entropy, partitioning classes, and calculating information gain.
+- DecisionTreeclassifier: A class representing a decision tree for regression.
+- RandomForest: A class representing a Random Forest model.
+
 """
 
 # Importing the required libraries
@@ -435,15 +433,6 @@ class RandomForest(object):
 
         return y
 
-    def user(self):
-        """
-        Returns the user's GTUsername.
-
-        Returns:
-            str: The user's GTUsername.
-        """
-        return 'sangarita3'
-
 class RandomForestWithInfoGain(RandomForest):
     """
     A random forest classifier that uses information gain as the criterion for splitting.
@@ -642,9 +631,6 @@ class runRandomForest(object):
             randomForest = RandomForest(self.forest_size,self.max_depth)
         else:
             randomForest = RandomForestWithInfoGain(self.forest_size, self.max_depth)
-
-        # printing the name
-        print("__Name: " + randomForest.user()+"__")
 
         # Creating the bootstrapping datasets
         print("creating the bootstrap datasets")
