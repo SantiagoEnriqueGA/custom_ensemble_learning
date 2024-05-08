@@ -1,8 +1,12 @@
 # Custom Random Forest Classifier and Regressor Project
 
+## Goal
+
+This project is primarily educational. It's not intended to be faster, more robust, or feature-rich than existing implementations. Instead, it focuses on understanding how the random forest algorithm works, building it from scratch using only numpy for faster array processing, and fine-tuning it for specific datasets or requirements.
+
 ## Overview
 
-This project implements a custom random forest classifier for binary classification tasks and a custom random forest regressor for regression tasks. It consists of the following main Python files:
+This project implements both a custom random forest classifier for binary classification tasks and a custom random forest regressor for regression tasks. It consists of the following main Python files:
 
 - `dataPrep.py`: Contains a class `DataPrep` for preparing data for machine learning models, including custom functions for one-hot encoding non-numerical columns and writing data to CSV files.
   
