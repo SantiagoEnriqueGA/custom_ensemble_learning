@@ -1,6 +1,7 @@
 import pandas as pd
 
-# Import Custom Libraries
+# Import Custom Classes
+import gradientBoostedRegressor as gbr
 import randomForestRegressor as rfg
 import randomForestClassifier as rfc
 import dataPrep as dp
@@ -19,7 +20,7 @@ def randomForestDiabetes():
     df, file_loc = dp.DataPrep.prepare_data(file_orig, label_col_index=2, cols_to_encode=[9,10])
 
     # Initialize random forest object
-    rfDiab = rfc.runRandomForest(file_loc,False, forest_size=100, random_seed=0, max_depth=25)
+    rfDiab = rfc.runRandomForest(file_loc,False, forest_size=10, random_seed=0, max_depth=25)
 
     # Train random forest model
     rfDiab.run()
@@ -37,36 +38,64 @@ def randomForestBreastCancer():
     file_loc = file_orig
 
     # Initialize random forest object
-    rfObjBreastCancer = rfc.runRandomForest(file_loc,False, forest_size=100, random_seed=0, max_depth=25)
+    rfObjBreastCancer = rfc.runRandomForest(file_loc,False, forest_size=10, random_seed=0, max_depth=25)
 
     # Train random forest model
     rfObjBreastCancer.run()
 
-def randomForestReg():
+def randomForestCarsReg():
     """
     Runs Random Forest on Cars.com dataset.
     """
     print("\n\nRandom Forest on Cars.com dataset\n")
 
-    # Source file location
-    file_orig = "data/output_May-06-2024_cleaned"
-
-    df = pd.read_csv(file_orig+".csv")
+    df = pd.read_csv("data/output_May-06-2024_cleaned.csv")
     df = df[['Miles', 'Stock', 'Year', 'Sub_Model','Price']]
-    file_orig+="_colsSelected_.csv"
-    df.to_csv(file_orig, index=False)
+    df.to_csv("data/carsDotCom.csv", index=False)
+
+    # Source file location
+    file_orig = "data/carsDotCom.csv"
 
     # Prepare and format data
     df, file_loc = dp.DataPrep.prepare_data(file_orig, label_col_index=4, cols_to_encode=[1,2,3])
 
 
     # Initialize random forest object
-    rfObj = rfg.runRandomForest(file_loc, forest_size=30, random_seed=0, max_depth=15)
+    rfObj = rfg.runRandomForest(file_loc, forest_size=3, random_seed=0, max_depth=10)
 
     # Train random forest model
     randomForest,stats = rfObj.run()
 
+def gbtrCarsReg():
+    """
+    Runs Gradient Boosted Decision Trees on the Cars.com dataset.
+    """
+    # Source file location
+    file_orig = "data/carsDotCom.csv"
+
+    # Prepare and format data
+    df, file_loc = dp.DataPrep.prepare_data(file_orig, label_col_index=4, cols_to_encode=[1,2,3])
+
+    # Initialize GBDT object
+    gbdtDiab = gbr.gradientBoostedRegressor(file_loc, num_trees=5, random_seed=0, max_depth=10)
+
+    # Train GBDT model
+    gbdtDiab.fit(stats=True)
+
+    # Predict target values
+    predictions = gbdtDiab.predict()
+
+    # Get stats
+    stats = gbdtDiab.get_stats(predictions)
+    print(stats)
+
+
+
+
 
 randomForestDiabetes()
 randomForestBreastCancer()
-randomForestReg()
+randomForestCarsReg()
+gbtrCarsReg()
+
+
