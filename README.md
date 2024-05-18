@@ -1,20 +1,26 @@
-# Custom Random Forest Classifier and Regressor Project
+# Custom Ensemble Learning Project
 
 ## Goal
 
-This project is primarily educational. It's not intended to be faster, more robust, or feature-rich than existing implementations. Instead, it focuses on understanding how the random forest algorithm works, building it from scratch using only numpy for faster array processing, and fine-tuning it for specific datasets or requirements.
+This project is primarily educational. It is designed to help understand the workings of various ensemble learning algorithms by building them from scratch. The implementations focus on fundamental concepts rather than on optimizing for speed or robustness, using only numpy for array processing and custom datasets for specific tasks.
 
 ## Overview
 
-This project implements both a custom random forest classifier for binary classification tasks and a custom random forest regressor for regression tasks. It consists of the following main Python files:
+This project includes implementations of custom random forest classifiers and regressors, as well as a gradient boosted decision tree regressor. The main Python files are:
 
-- `dataPrep.py`: Contains a class `DataPrep` for preparing data for machine learning models, including custom functions for one-hot encoding non-numerical columns and writing data to CSV files.
+- `dataPrep.py`: Contains the `DataPrep` class for preparing data for machine learning models, including functions for one-hot encoding non-numerical columns and writing data to CSV files.
   
-- `randomForestClassifier.py`: Implements a custom random forest classifier along with utility functions for computing entropy, partitioning classes, and calculating information gain.
+- `decisionTreeClassifier.py`: Implements a decision tree classifier along with utility functions for computing entropy, partitioning classes, and calculating information gain.
   
-- `randomForestRegressor.py`: Implements a modified version of `randomForestClassifier.py` updated to perform regression tasks.
+- `decisionTreeRegressor.py`: Implements a decision tree regressor with utility functions for computing variance, partitioning classes, and calculating information gain.
+  
+- `randomForestClassifier.py`: Implements a custom random forest classifier with utility functions for computing entropy, partitioning classes, and calculating information gain.
+  
+- `randomForestRegressor.py`: Implements a custom random forest regressor with utility functions for computing variance, partitioning classes, and calculating information gain.
 
-- `runRandomForest.py`: Updated to run `randomForestClassifier.py` on the Pima Indians Diabetes dataset and Wisconsin Breast Prognostic dataset, and `randomForestRegressor.py` on `output_May-06-2024_cleaned.csv`.
+- `gradientBoostedRegressor.py`: Implements a gradient boosted decision tree regressor for regression tasks.
+
+- `runRandomForest.py`: Contains functions to run the random forest classifier and regressor on various datasets.
 
 ## Included CSV Files
 
@@ -22,7 +28,7 @@ This project implements both a custom random forest classifier for binary classi
   
 - `pima-indians-diabetes.csv`: Dataset used for the Pima Indians Diabetes dataset analysis.
 
-- `output_May-06-2024_cleaned.csv`: Car listing data scraped from cars.com via my repository "used_car_price_visualization".
+- `output_May-06-2024_cleaned.csv`: Car listing data scraped from cars.com via the repository "used_car_price_visualization".
 
 ## `dataPrep.py`
 
@@ -34,38 +40,101 @@ This project implements both a custom random forest classifier for binary classi
   
 - `prepare_data(csv_file, label_col_index, cols_to_encode=[], write_to_csv=True)`: Prepares the data by loading a CSV file, one-hot encoding non-numerical columns, and optionally writing the prepared data to a new CSV file.
 
-## `randomForestClassifier.py`
+## `decisionTreeClassifier.py`
 
-### Classes: `Utility`, `DecisionTree`, `DecisionTreeWithInfoGain`, `RandomForest`, `RandomForestWithInfoGain`
+### Classes: `Utility`, `DecisionTree`, `DecisionTreeWithInfoGain`
 
 - `Utility`: Utility class for computing entropy, partitioning classes, and calculating information gain.
   
 - `DecisionTree`: Represents a decision tree for classification tasks.
   
 - `DecisionTreeWithInfoGain`: Extends `DecisionTree` to use information gain for splitting.
-  
-- `RandomForest`: Implements a custom random forest classifier with bootstrapping and voting mechanisms.
-  
-- `RandomForestWithInfoGain`: Extends `RandomForest` to use information gain for splitting.
 
-## `randomForestRegressor.py`
+## `decisionTreeRegressor.py`
 
-### Classes: `Utility`, `DecisionTree`, `RandomForest`,
+### Classes: `Utility`, `DecisionTreeRegressor`
 
 - `Utility`: Utility class for computing variance, partitioning classes, and calculating information gain.
   
 - `DecisionTreeRegressor`: Represents a decision tree for regression tasks.
-    
+
+## `randomForestClassifier.py`
+
+### Classes: `RandomForest`, `RandomForestWithInfoGain`, `runRandomForest`
+
 - `RandomForest`: Implements a custom random forest classifier with bootstrapping and voting mechanisms.
   
+- `RandomForestWithInfoGain`: Extends `RandomForest` to use information gain for splitting.
+  
+- `runRandomForest`: Contains functions to run the random forest classifier.
+
+## `randomForestRegressor.py`
+
+### Classes: `RandomForest`, `runRandomForest`
+
+- `RandomForest`: Implements a custom random forest regressor with bootstrapping and aggregation mechanisms.
+  
+- `runRandomForest`: Contains functions to run the random forest regressor.
+
+## `gradientBoostedRegressor.py`
+
+### Class: `gradientBoostedRegressor`
+
+- `gradientBoostedRegressor`: Represents a gradient boosted decision tree regressor for regression tasks.
+  
+  - **Attributes**:
+    - `random_seed`: Random seed for the random number generator.
+    - `num_trees`: Number of decision trees in the ensemble.
+    - `max_depth`: Maximum depth of each decision tree.
+    - `X`: List of input data features.
+    - `y`: List of target values.
+    - `XX`: Combined list of input data features and target values.
+    - `numerical_cols`: Set of indices for numeric columns.
+  
+  - **Methods**:
+    - `__init__(file_loc, num_trees=5, random_seed=0, max_depth=10)`: Initializes the GBDT object.
+    - `reset()`: Resets the GBDT object.
+    - `fit(stats=False)`: Fits the GBDT model to the training data.
+    - `predict()`: Predicts the target values for the input data.
+    - `get_stats(y_predicted)`: Calculates evaluation metrics for the predicted target values.
+
+### Example Usage
+
+The `run` function in `gradientBoostedRegressor.py` demonstrates how to prepare data, train the model, and evaluate its performance:
+
+```python
+def run():
+    """
+    Runs Gradient Boosted Decision Trees on the given dataset.
+    """
+    # Source file location
+    file_orig = "data/carsDotCom.csv"
+
+    # Prepare and format data
+    df, file_loc = dp.DataPrep.prepare_data(file_orig, label_col_index=4, cols_to_encode=[1,2,3])
+
+    # Initialize GBDT object
+    gbdtDiab = gradientBoostedRegressor(file_loc, num_trees=10, random_seed=0, max_depth=3)
+
+    # Train GBDT model
+    gbdtDiab.fit(stats=True)
+
+    # Predict target values
+    predictions = gbdtDiab.predict()
+
+    # Get stats
+    stats = gbdtDiab.get_stats(predictions)
+    print(stats)
+if __name__ == "__main__":
+    run()
+```
 
 ## `runRandomForest.py`
 
-This file contains functions to run the custom random forest classifier on two datasets:
+This file contains functions to run the custom random forest classifier and regressor on various datasets:
 
-- `randomForestDiabetes()`: Runs random forest classifier on the Pima Indians Diabetes dataset.
+- `randomForestDiabetes()`: Runs the random forest classifier on the Pima Indians Diabetes dataset.
   
-- `randomForestBreastCancer()`: Runs random forest classifier on the Wisconsin Breast Prognostic dataset.
+- `randomForestBreastCancer()`: Runs the random forest classifier on the Wisconsin Breast Prognostic dataset.
 
-- `randomForestReg()`: Runs the random forest regressor on the cars.com, `output_May-06-2024_cleaned.csv` dataset.
-
+- `randomForestReg()`: Runs the random forest regressor on the cars.com dataset (`output_May-06-2024_cleaned.csv`).
