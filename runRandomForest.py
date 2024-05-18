@@ -9,9 +9,9 @@ import dataPrep as dp
 
 def randomForestDiabetes():
     """
-    Runs Random Forest on Pima Indians Diabetes dataset.
+    Runs Random Forest Classifier on Pima Indians Diabetes dataset.
     """
-    print("\n\nRandom Forest on Pima Indians Diabetes dataset\n")
+    print("\n\nRandom Forest Classifier on Pima Indians Diabetes dataset\n")
 
     # Source file location
     file_orig = "data/pima-indians-diabetes.csv"
@@ -27,9 +27,9 @@ def randomForestDiabetes():
 
 def randomForestBreastCancer():
     """
-    Runs Random Forest on Wisconsin Breast Prognostic dataset.
+    Runs Random Forest Classifier on Wisconsin Breast Prognostic dataset.
     """
-    print("\n\nRandom Forest on Wisconsin Breast Prognostic dataset\n")
+    print("\n\nRandom Forest Classifier on Wisconsin Breast Prognostic dataset\n")
 
     # Source file location
     file_orig = "data/Wisconsin_breast_prognostic.csv"
@@ -45,9 +45,9 @@ def randomForestBreastCancer():
 
 def randomForestCarsReg():
     """
-    Runs Random Forest on Cars.com dataset.
+    Runs Random Forest Regressor on Cars.com dataset.
     """
-    print("\n\nRandom Forest on Cars.com dataset\n")
+    print("\n\nRandom Forest Regressor on Cars.com dataset\n")
 
     df = pd.read_csv("data/output_May-06-2024_cleaned.csv")
     df = df[['Miles', 'Stock', 'Year', 'Sub_Model','Price']]
@@ -68,8 +68,10 @@ def randomForestCarsReg():
 
 def gbtrCarsReg():
     """
-    Runs Gradient Boosted Decision Trees on the Cars.com dataset.
+    Runs Gradient Boosted Regressor on the Cars.com dataset.
     """
+    print("\n\nGradient Boosted Regressor on Cars.com dataset\n")
+
     # Source file location
     file_orig = "data/carsDotCom.csv"
 
