@@ -38,6 +38,7 @@ class gradientBoostedRegressor(object):
         self.y = list()
         self.XX = list()  # Contains both data features and data labels
         self.numerical_cols = 0
+        self.mean_absolute_residuals = []
 
         self.utility = Utility()
         self.trees = [DecisionTreeRegressor(self.max_depth) for i in range(self.num_trees)]
@@ -83,6 +84,7 @@ class gradientBoostedRegressor(object):
         self.y = list()
         self.XX = list()
         self.numerical_cols = 0
+        self.mean_absolute_residuals = []
 
 
     def fit(self, stats=False):
@@ -119,9 +121,13 @@ class gradientBoostedRegressor(object):
             # Update the residuals by subtracting the predictions from the target values
             residuals = residuals - predictions
 
+            # Store the Mean Absolute Residuals for the current tree
+            mean_absolute_residual = np.mean(np.abs(residuals))
+            self.mean_absolute_residuals.append(mean_absolute_residual)
+
             # If True, print the number of the trained tree and the total residuals
             if stats:
-                print(f"Tree {i+1} trained. Mean Absolute Residuals: {abs(residuals).mean()}")
+                print(f"Tree {i+1} trained. Mean Absolute Residuals: {mean_absolute_residual}")
 
     def predict(self):
         """
@@ -185,7 +191,8 @@ class gradientBoostedRegressor(object):
             "R^2": r2,
             "MAPE": mape,
             "MAE": mae,
-            "RMSE": rmse
+            "RMSE": rmse,
+            "Mean_Absolute_Residuals": self.mean_absolute_residuals
         }
 
   
