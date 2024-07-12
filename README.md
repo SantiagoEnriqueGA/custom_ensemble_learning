@@ -15,6 +15,8 @@ This project includes implementations of custom random forest classifiers and re
 - `decisionTreeRegressor.py`: Implements a decision tree regressor with utility functions for computing variance, partitioning classes, and calculating information gain.
   
 - `randomForestClassifier.py`: Implements a custom random forest classifier with utility functions for computing entropy, partitioning classes, and calculating information gain.
+
+- `randomForestClassifierPar.py`: Updated randomForestClassifier.py to implement multiprocessing
   
 - `randomForestRegressor.py`: Implements a custom random forest regressor with utility functions for computing variance, partitioning classes, and calculating information gain.
 
@@ -30,75 +32,7 @@ This project includes implementations of custom random forest classifiers and re
 
 - `output_May-06-2024_cleaned.csv`: Car listing data scraped from cars.com via the repository "used_car_price_visualization".
 
-## `dataPrep.py`
-
-### Class: `DataPrep`
-
-- `one_hot_encode(df, cols)`: One-hot encodes non-numerical columns in a DataFrame.
-  
-- `write_data(df, csv_file)`: Writes the DataFrame to a CSV file.
-  
-- `prepare_data(csv_file, label_col_index, cols_to_encode=[], write_to_csv=True)`: Prepares the data by loading a CSV file, one-hot encoding non-numerical columns, and optionally writing the prepared data to a new CSV file.
-
-## `decisionTreeClassifier.py`
-
-### Classes: `Utility`, `DecisionTree`, `DecisionTreeWithInfoGain`
-
-- `Utility`: Utility class for computing entropy, partitioning classes, and calculating information gain.
-  
-- `DecisionTree`: Represents a decision tree for classification tasks.
-  
-- `DecisionTreeWithInfoGain`: Extends `DecisionTree` to use information gain for splitting.
-
-## `decisionTreeRegressor.py`
-
-### Classes: `Utility`, `DecisionTreeRegressor`
-
-- `Utility`: Utility class for computing variance, partitioning classes, and calculating information gain.
-  
-- `DecisionTreeRegressor`: Represents a decision tree for regression tasks.
-
-## `randomForestClassifier.py`
-
-### Classes: `RandomForest`, `RandomForestWithInfoGain`, `runRandomForest`
-
-- `RandomForest`: Implements a custom random forest classifier with bootstrapping and voting mechanisms.
-  
-- `RandomForestWithInfoGain`: Extends `RandomForest` to use information gain for splitting.
-  
-- `runRandomForest`: Contains functions to run the random forest classifier.
-
-## `randomForestRegressor.py`
-
-### Classes: `RandomForest`, `runRandomForest`
-
-- `RandomForest`: Implements a custom random forest regressor with bootstrapping and aggregation mechanisms.
-  
-- `runRandomForest`: Contains functions to run the random forest regressor.
-
-## `gradientBoostedRegressor.py`
-
-### Class: `gradientBoostedRegressor`
-
-- `gradientBoostedRegressor`: Represents a gradient boosted decision tree regressor for regression tasks.
-  
-  - **Attributes**:
-    - `random_seed`: Random seed for the random number generator.
-    - `num_trees`: Number of decision trees in the ensemble.
-    - `max_depth`: Maximum depth of each decision tree.
-    - `X`: List of input data features.
-    - `y`: List of target values.
-    - `XX`: Combined list of input data features and target values.
-    - `numerical_cols`: Set of indices for numeric columns.
-  
-  - **Methods**:
-    - `__init__(file_loc, num_trees=5, random_seed=0, max_depth=10)`: Initializes the GBDT object.
-    - `reset()`: Resets the GBDT object.
-    - `fit(stats=False)`: Fits the GBDT model to the training data.
-    - `predict()`: Predicts the target values for the input data.
-    - `get_stats(y_predicted)`: Calculates evaluation metrics for the predicted target values.
-
-### Example Usage
+## Example Usage
 
 The `run` function in `gradientBoostedRegressor.py` demonstrates how to prepare data, train the model, and evaluate its performance:
 
@@ -129,7 +63,81 @@ if __name__ == "__main__":
     run()
 ```
 
-## `runRandomForest.py`
+## Example Results
+
+![image](https://raw.githubusercontent.com/SantiagoEnriqueGA/custom_ensemble_learning/main/vis/randomForestCarsReg_R2.png) 
+![image](https://raw.githubusercontent.com/SantiagoEnriqueGA/custom_ensemble_learning/main/vis/randomForestCarsReg_MSE.png)
+
+
+## dataPrep.py
+
+### Class: `DataPrep`
+
+- `one_hot_encode(df, cols)`: One-hot encodes non-numerical columns in a DataFrame.
+  
+- `write_data(df, csv_file)`: Writes the DataFrame to a CSV file.
+  
+- `prepare_data(csv_file, label_col_index, cols_to_encode=[], write_to_csv=True)`: Prepares the data by loading a CSV file, one-hot encoding non-numerical columns, and optionally writing the prepared data to a new CSV file.
+
+## decisionTreeClassifier.py
+
+### Classes: `Utility`, `DecisionTree`, `DecisionTreeWithInfoGain`
+
+- `Utility`: Utility class for computing entropy, partitioning classes, and calculating information gain.
+  
+- `DecisionTree`: Represents a decision tree for classification tasks.
+  
+- `DecisionTreeWithInfoGain`: Extends `DecisionTree` to use information gain for splitting.
+
+## decisionTreeRegressor.py
+
+### Classes: `Utility`, `DecisionTreeRegressor`
+
+- `Utility`: Utility class for computing variance, partitioning classes, and calculating information gain.
+  
+- `DecisionTreeRegressor`: Represents a decision tree for regression tasks.
+
+## randomForestClassifier.py AND randomForestClassifierPar.py
+
+### Classes: `RandomForest`, `RandomForestWithInfoGain`, `runRandomForest`
+
+- `RandomForest`: Implements a custom random forest classifier with bootstrapping and voting mechanisms.
+  
+- `RandomForestWithInfoGain`: Extends `RandomForest` to use information gain for splitting.
+  
+- `runRandomForest`: Contains functions to run the random forest classifier.
+
+## randomForestRegressor.py
+
+### Classes: `RandomForest`, `runRandomForest`
+
+- `RandomForest`: Implements a custom random forest regressor with bootstrapping and aggregation mechanisms.
+  
+- `runRandomForest`: Contains functions to run the random forest regressor.
+
+## gradientBoostedRegressor.py
+
+### Class: `gradientBoostedRegressor`
+
+- `gradientBoostedRegressor`: Represents a gradient boosted decision tree regressor for regression tasks.
+  
+  - **Attributes**:
+    - `random_seed`: Random seed for the random number generator.
+    - `num_trees`: Number of decision trees in the ensemble.
+    - `max_depth`: Maximum depth of each decision tree.
+    - `X`: List of input data features.
+    - `y`: List of target values.
+    - `XX`: Combined list of input data features and target values.
+    - `numerical_cols`: Set of indices for numeric columns.
+  
+  - **Methods**:
+    - `__init__(file_loc, num_trees=5, random_seed=0, max_depth=10)`: Initializes the GBDT object.
+    - `reset()`: Resets the GBDT object.
+    - `fit(stats=False)`: Fits the GBDT model to the training data.
+    - `predict()`: Predicts the target values for the input data.
+    - `get_stats(y_predicted)`: Calculates evaluation metrics for the predicted target values.
+
+## runRandomForest.py
 
 This file contains functions to run the custom random forest classifier and regressor on various datasets:
 
