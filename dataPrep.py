@@ -16,18 +16,13 @@ class DataPrep(object):
         Returns:
         - df (pandas.DataFrame): The DataFrame with one-hot encoded columns.
         """
+        for col in cols:                                # For each column index
+            unique_values = df.iloc[:, col].unique()    # Get the unique values in the column
 
-        # One-hot-encode non-numerical columns
-        for col in cols:
-            # Get unique values in the column
-            unique_values = df.iloc[:, col].unique()
+            for value in unique_values:                                 # For each unique value, create a new binary column
+                df[str(value)] = (df.iloc[:, col] == value).astype(int) # Set the value to 1 if the original column is equal to the unique value
 
-            # For each unique value, create a new binary column
-            for value in unique_values:
-                df[str(value)] = (df.iloc[:, col] == value).astype(int)
-
-        # Drop the original column
-        df = df.drop(df.columns[cols], axis=1)
+        df = df.drop(df.columns[cols], axis=1)          # Drop the original column
 
         return df
 
@@ -39,10 +34,8 @@ class DataPrep(object):
         - df (pandas.DataFrame): The DataFrame to be written.
         - csv_file (str): The path of the CSV file to write to.
         """
-
-        # Write the DataFrame to a CSV file
-        df.to_csv(csv_file, index=False)
-        print("Prepared data written to", csv_file)
+        df.to_csv(csv_file, index=False)            # Write the DataFrame to a CSV file
+        print("Prepared data written to", csv_file) # Print the path of the written file
 
     def prepare_data(csv_file, label_col_index, cols_to_encode=[], write_to_csv=True):
         """
@@ -58,23 +51,17 @@ class DataPrep(object):
         Returns:
         - df (pandas.DataFrame): The prepared DataFrame.
         """
+        df = pd.read_csv(csv_file)              # Load the CSV file
+        
+        label_col = df.columns[label_col_index]             # Get the label column name(s)
+        df = DataPrep.one_hot_encode(df, cols_to_encode)    # One-hot encode the specified columns
 
-        # Load the CSV file into a pandas DataFrame
-        df = pd.read_csv(csv_file)
+        df = pd.concat([df.drop(label_col, axis=1), df[[label_col]]], axis=1)   # Move the label column from start to the end
 
-        # Extarct Label column to variable
-        label_col = df.columns[label_col_index]
+        if write_to_csv:    # If write_to_csv is True
+            prepared_csv_file = csv_file.replace('.csv', '_prepared.csv')   # Create a new file path for the prepared data
+            DataPrep.write_data(df, prepared_csv_file)                      # Write the prepared data to a new CSV file
+            return df, prepared_csv_file                                    # Return the prepared DataFrame and the path of the written file
 
-        # One-hot-encode non-numerical columns
-        df = DataPrep.one_hot_encode(df, cols_to_encode)
-
-        # Move the label column from start to the end
-        df = pd.concat([df.drop(label_col, axis=1), df[[label_col]]], axis=1)
-
-        if write_to_csv:
-            prepared_csv_file = csv_file.replace('.csv', '_prepared.csv')
-            DataPrep.write_data(df, prepared_csv_file)
-            return df, prepared_csv_file
-
-        return df, "N/A"
+        return df, "N/A"    # Else, return the prepared DataFrame and "N/A"
         

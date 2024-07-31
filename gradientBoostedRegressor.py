@@ -29,54 +29,53 @@ class gradientBoostedRegressor(object):
     """
 
     def __init__(self, file_loc: str, num_trees: int = 5, random_seed: int = 0, max_depth: int = 10):
-        # self.reset()
+        self.random_seed = random_seed  # Set the random seed for reproducibility
+        self.num_trees = num_trees      # Set the number of trees in the ensemble
+        self.max_depth = max_depth      # Set the maximum depth of each tree
 
-        self.random_seed = random_seed
-        self.num_trees = num_trees
-        self.max_depth = max_depth
-        self.X = list()
-        self.y = list()
-        self.XX = list()  # Contains both data features and data labels
-        self.numerical_cols = 0
-        self.mean_absolute_residuals = []
+        self.X = list()                 # Initialize the list of input data features
+        self.y = list()                 # Initialize the list of target values
+        self.XX = list()                # Initialize the list of input data features and target values
+        
+        self.numerical_cols = 0             # Initialize the set of indices of numeric attributes (columns)
+        self.mean_absolute_residuals = []   # Initialize the list of Mean Absolute Residuals for each tree
 
-        self.utility = Utility()
-        self.trees = [DecisionTreeRegressor(self.max_depth) for i in range(self.num_trees)]
+        self.utility = Utility()            # Initialize the Utility object
+        self.trees = [DecisionTreeRegressor(self.max_depth) for i in range(self.num_trees)] # Initialize the list of decision trees
+        self.numerical_cols = set()         # Initialize the set of indices of numeric attributes (columns)
 
-        # Get the indices of numeric attributes (columns)
-        self.numerical_cols = set()
-        with open(file_loc, 'r') as f:
-            reader = csv.reader(f)
-            headers = next(reader)
-            for i in range(len(headers)):
+        with open(file_loc, 'r') as f:      # Open the file in read mode
+            reader = csv.reader(f)          # Create a CSV reader
+            headers = next(reader)          # Get the headers of the CSV file
+            for i in range(len(headers)):   # Loop over the indices of the headers
                 try:
-                    # Try to convert the first row (excluding label) to float
-                    float(next(reader)[i])
-                    self.numerical_cols.add(i)
+                    float(next(reader)[i])      # If successful, add the index to the set of numerical columns
+                    self.numerical_cols.add(i)  # Add the index to the set of numerical columns
                 except ValueError:
                     continue
 
-        # Loading data set
         print("reading the data")
         try:
-            with open(file_loc) as f:
-                next(f, None)
-                for line in csv.reader(f, delimiter=","):
-                    xline = []
-                    for i in range(len(line)):
-                        if i in self.numerical_cols:
-                            xline.append(ast.literal_eval(line[i]))
-                        else:
-                            xline.append(line[i])
+            with open(file_loc) as f:                       # Open the file
+                next(f, None)                               # Skip the header
+                for line in csv.reader(f, delimiter=","):   # Read the file line by line
+                    xline = []                              
+                    for i in range(len(line)):              # Loop over the indices of the line
+                        if i in self.numerical_cols:                # If the index is in the set of numerical columns
+                            xline.append(ast.literal_eval(line[i])) # Append the value to the input data features
+                        
+                        else:                                       # If the index is not in the set of numerical columns
+                            xline.append(line[i])                   # Append the value to the input data features
 
-                    self.X.append(xline[:-1])
-                    self.y.append(xline[-1])
-                    self.XX.append(xline[:])
+                    self.X.append(xline[:-1])   # Append the input data features to the list of input data features
+                    self.y.append(xline[-1])    # Append the target value to the list of target values
+                    self.XX.append(xline[:])    # Append the input data features and target value to the list of input data features and target values
         except FileNotFoundError:
             print(f"File {file_loc} not found.")
             return None, None
 
     def reset(self):
+        # Reset the GBDT object
         self.random_seed = 0
         self.num_trees = 10
         self.max_depth = 10
@@ -101,32 +100,23 @@ class gradientBoostedRegressor(object):
         Returns:
             None
         """
-
-        # Check if the input data X and target values y are not empty
-        if not self.X or not self.y:
+        if not self.X or not self.y:    # If the input data X or target values y are empty
             raise ValueError("Input data X and target values y cannot be empty.")
         
-        # Initialize residuals as a numpy array of target values y
-        residuals = np.array(self.y)
+        residuals = np.array(self.y)    # Initialize the residuals with the target values
 
-        # Loop over the number of trees in the ensemble
-        for i in range(self.num_trees):
-            # Update the tree by learning from the input data X and residuals
-            tree = self.trees[i]
-            self.trees[i] = tree.learn(self.X, residuals)
+        for i in range(self.num_trees):     # Loop over the number of trees in the ensemble
+            tree = self.trees[i]                            # Get the current tree
+            self.trees[i] = tree.learn(self.X, residuals)   # Fit the tree to the residuals
 
-            # Predict the target values for the input data X using the tree
-            predictions = np.array([DecisionTreeRegressor.predict(self.trees[i], record) for record in self.X])
+            predictions = np.array([DecisionTreeRegressor.predict(self.trees[i], record) for record in self.X]) # Predict the target values using the current tree
         
-            # Update the residuals by subtracting the predictions from the target values
-            residuals = residuals - predictions
+            residuals = residuals - predictions     # Update the residuals by subtracting the predictions from the target values
 
-            # Store the Mean Absolute Residuals for the current tree
-            mean_absolute_residual = np.mean(np.abs(residuals))
-            self.mean_absolute_residuals.append(mean_absolute_residual)
+            mean_absolute_residual = np.mean(np.abs(residuals))         # Calculate the mean absolute residuals
+            self.mean_absolute_residuals.append(mean_absolute_residual) # Append the mean absolute residuals to the list
 
-            # If True, print the number of the trained tree and the total residuals
-            if stats:
+            if stats:   # If stats is True, print the mean absolute residuals
                 print(f"Tree {i+1} trained. Mean Absolute Residuals: {mean_absolute_residual}")
 
     def predict(self):
@@ -136,21 +126,15 @@ class gradientBoostedRegressor(object):
         Returns:
             predictions (numpy.ndarray): An array of predicted target values for the input data.
         """
+        predictions = np.zeros(len(self.X))     # Initialize an array of zeros for the predictions
 
-        # Initialize an array of zeros with the same length as the input data
-        predictions = np.zeros(len(self.X))
+        for i in range(self.num_trees):                     # Loop over the number of trees in the ensemble
+            oneTree_predictions = np.zeros(len(self.X))     # Initialize an array of zeros for the predictions of the current tree
 
-        # Loop over each tree in the ensemble
-        for i in range(self.num_trees):
-            # Initialize an array of zeros for the predictions of current tree
-            oneTree_predictions = np.zeros(len(self.X))
+            for j in range(len(self.X)):                    # Loop over the indices of the input data
+                oneTree_predictions[j] += DecisionTreeRegressor.predict(self.trees[i], self.X[j])   # Predict the target value for the current input data
 
-            # For each data point in the input data, predict the target value using the current tree
-            for j in range(len(self.X)):
-                oneTree_predictions[j] += DecisionTreeRegressor.predict(self.trees[i], self.X[j])
-
-            # Add the predictions of the current tree to the overall predictions
-            predictions += oneTree_predictions
+            predictions += oneTree_predictions              # Add the predictions of the current tree to the overall predictions
             
         return predictions
     
@@ -169,23 +153,19 @@ class gradientBoostedRegressor(object):
                 - MAE (float): Mean Absolute Error
                 - RMSE (float): Root Mean Squared Error
         """
-        # Mean Squared Error (MSE)
-        mse = np.mean((np.array(y_predicted) - np.array(self.y)) ** 2)
+        mse = np.mean((np.array(y_predicted) - np.array(self.y)) ** 2)  # Mean Squared Error (MSE): (y - y')^2
 
-        # R^2 Score
-        ssr = np.sum((np.array(y_predicted) - np.array(self.y)) ** 2)
-        sst = np.sum((np.array(self.y) - np.mean(self.y)) ** 2)
-        r2 = 1 - (ssr / sst)
+        ssr = np.sum((np.array(y_predicted) - np.array(self.y)) ** 2)   # Sum of Squared Residuals (SSR): (y - y')^2
+        sst = np.sum((np.array(self.y) - np.mean(self.y)) ** 2)         # Total Sum of Squares (SST): (y - mean(y))^2
+        r2 = 1 - (ssr / sst)                                            # R-squared Score (R^2): 1 - (SSR / SST)
 
-        # Mean Absolute Percentage Error (MAPE)
-        mape = np.mean(np.abs((np.array(self.y) - np.array(y_predicted)) / np.array(self.y))) * 100
+        mape = np.mean(np.abs((np.array(self.y) - np.array(y_predicted)) / np.array(self.y))) * 100     # Mean Absolute Percentage Error (MAPE): (|y - y'| / y) * 100
 
-        # Mean Absolute Error (MAE)
-        mae = np.mean(np.abs(np.array(self.y) - np.array(y_predicted)))
+        mae = np.mean(np.abs(np.array(self.y) - np.array(y_predicted))) # Mean Absolute Error (MAE): |y - y'|
 
-        # Root Mean Squared Error (RMSE)
-        rmse = np.sqrt(np.mean((np.array(y_predicted) - np.array(self.y)) ** 2))
+        rmse = np.sqrt(np.mean((np.array(y_predicted) - np.array(self.y)) ** 2))    # Root Mean Squared Error (RMSE): sqrt((y - y')^2)
 
+        # Return the evaluation metrics
         return {
             "MSE": mse,
             "R^2": r2,

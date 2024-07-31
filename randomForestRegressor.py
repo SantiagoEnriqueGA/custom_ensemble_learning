@@ -35,12 +35,12 @@ class RandomForest(object):
         voting(X): Performs voting to predict the target values for the input records.
         user(): Returns the user's GTUsername.
     """
-
-    num_trees = 0
-    decision_trees = []
-    bootstraps_datasets = []
-    bootstraps_labels = []
-    max_depth = 10
+    # Initialize class variables
+    num_trees = 0               # Number of decision trees in the random forest
+    decision_trees = []         # List of decision trees in the random forest
+    bootstraps_datasets = []    # List of bootstrapped datasets for each tree
+    bootstraps_labels = []      # List of true class labels corresponding to records in the bootstrapped datasets
+    max_depth = 10              # Maximum depth of each decision tree
 
     def __init__(self, num_trees, max_depth):
         """
@@ -50,11 +50,13 @@ class RandomForest(object):
             num_trees (int): The number of decision trees in the random forest.
             max_depth (int): The maximum depth of each decision tree.
         """
-        self.num_trees = num_trees
-        self.max_depth = max_depth
-        self.decision_trees = [DecisionTreeRegressor(max_depth) for i in range(num_trees)]
-        self.bootstraps_datasets = []
-        self.bootstraps_labels = []
+        self.num_trees = num_trees  # Set the number of trees
+        self.max_depth = max_depth  # Set the maximum depth
+
+        self.decision_trees = [DecisionTreeRegressor(max_depth) for i in range(num_trees)]  # Initialize the decision trees
+        
+        self.bootstraps_datasets = []   # Initialize the list of bootstrapped datasets
+        self.bootstraps_labels = []     # Initialize the list of corresponding labels
 
     def _bootstrapping(self, XX, n):
         """
@@ -67,9 +69,11 @@ class RandomForest(object):
         Returns:
             tuple: A tuple containing the bootstrapped dataset and the corresponding labels.
         """
-        sample_indices = np.random.choice(len(XX), size=n, replace=True)
-        sample = [XX[i][:-1] for i in sample_indices]
-        labels = [XX[i][-1] for i in sample_indices]
+        sample_indices = np.random.choice(len(XX), size=n, replace=True)    # Randomly select indices with replacement
+        
+        sample = [XX[i][:-1] for i in sample_indices]   # Get the features of the selected samples
+        labels = [XX[i][-1] for i in sample_indices]    # Get the labels of the selected samples
+        
         return (sample, labels)
 
     def bootstrapping(self, XX):
@@ -79,20 +83,21 @@ class RandomForest(object):
         Args:
             XX (list): The dataset.
         """
-        for i in range(self.num_trees):
-            data_sample, data_label = self._bootstrapping(XX, len(XX))
-            self.bootstraps_datasets.append(data_sample)
-            self.bootstraps_labels.append(data_label)
+        for i in range(self.num_trees):                                 # For each tree
+            data_sample, data_label = self._bootstrapping(XX, len(XX))  # Perform bootstrapping on the dataset
+            self.bootstraps_datasets.append(data_sample)                # Add the bootstrapped dataset to the list
+            self.bootstraps_labels.append(data_label)                   # Add the corresponding labels to the list
 
     def fitting(self):
         """
         Fits the decision trees to the bootstrapped datasets.
         """
-        for i in range(self.num_trees):
-            tree = self.decision_trees[i]
-            dataset = self.bootstraps_datasets[i]
-            labels = self.bootstraps_labels[i]
-            self.decision_trees[i] = tree.learn(dataset, labels)
+        for i in range(self.num_trees):             # For each tree
+            tree = self.decision_trees[i]           # Get the current tree
+            dataset = self.bootstraps_datasets[i]   # Get the bootstrapped dataset
+            labels = self.bootstraps_labels[i]      # Get the corresponding labels
+            
+            self.decision_trees[i] = tree.learn(dataset, labels)    # Fit the tree to the bootstrapped dataset
 
     def voting(self, X):
         """
@@ -105,27 +110,26 @@ class RandomForest(object):
             list: The predicted target values for the input records.
         """
         y = []
-
-        for record in X:
+        for record in X:        # For each record
             predictions = []
+            for i, dataset in enumerate(self.bootstraps_datasets):  # For each bootstrapped dataset
+                
+                # Records not in the dataset are considered out-of-bag (OOB) records, which can be used for voting
+                if record not in dataset:               # If the record is not in the dataset
+                    OOB_tree = self.decision_trees[i]   # Get the decision tree corresponding to the dataset
+                    prediction = DecisionTreeRegressor.predict(OOB_tree, record)    # Predict the target value for the record
+                    predictions.append(prediction)      # Add the prediction to the votes list
 
-            for i, dataset in enumerate(self.bootstraps_datasets):
-                # For unbiased estimate, only consider the trees that did not train on the record
-                if record not in dataset:
-                    OOB_tree = self.decision_trees[i]
-                    prediction = DecisionTreeRegressor.predict(OOB_tree, record)
-                    predictions.append(prediction)
-
-            if len(predictions) > 0:
-                mean_prediction = np.mean(predictions)
-                y.append(mean_prediction)
-            else:
-                # If the record is not out-of-bag (OOB), use all trees for prediction
-                for i in range(self.num_trees):
-                    tree = self.decision_trees[i]
-                    predictions.append(DecisionTreeRegressor.predict(tree, record))
-                y.append(np.mean(predictions))
-
+            # Calculate the mean prediction for the record
+            if len(predictions) > 0:                    # If there are predictions
+                mean_prediction = np.mean(predictions)  # Calculate the mean prediction
+                y.append(mean_prediction)               # Add the mean prediction to the list
+            
+            else:   # If the record is not out-of-bag (OOB), use all trees for prediction
+                for i in range(self.num_trees):     # For each tree
+                    tree = self.decision_trees[i]   # Get the current tree
+                    predictions.append(DecisionTreeRegressor.predict(tree, record)) # Predict the target value for the record
+                y.append(np.mean(predictions))      # Add the mean prediction to the list
 
         return y
 
@@ -156,15 +160,16 @@ class runRandomForest(object):
     Example:
         randomForest, accuracy = runRandomForest('data.csv', display=True, forest_size=10, random_seed=42)
     """
-
-    random_seed = 0
-    forest_size = 10
-    max_depth = 10
-    display = False
-    X = list()
-    y = list()
-    XX = list()  # Contains both data features and data labels
-    numerical_cols = 0
+    # Initialize class variables
+    random_seed = 0     # Random seed for reproducibility
+    forest_size = 10    # Number of trees in the random forest
+    max_depth = 10      # Maximum depth of each decision tree
+    display = False     # Flag to display additional information about info gain
+    
+    X = list()          # Data features
+    y = list()          # Data labels
+    XX = list()         # Contains both data features and data labels
+    numerical_cols = 0  # Number of numeric attributes (columns)
 
     def __init__(self, file_loc, forest_size=5, random_seed=0, max_depth=10):
         """
@@ -177,43 +182,41 @@ class runRandomForest(object):
             random_seed (int, optional): The random seed for reproducibility. Defaults to 0.
             max_depth (int, optional): The maximum depth of each decision tree in the random forest. Defaults to 10.
         """
-        self.reset()
+        self.reset()    # Reset the random forest object
 
-        self.random_seed = random_seed
-        np.random.seed(random_seed)
+        self.random_seed = random_seed  # Set the random seed for reproducibility
+        np.random.seed(random_seed)     # Set the random seed for NumPy
 
-        self.forest_size = forest_size
-        self.max_depth = max_depth
+        self.forest_size = forest_size  # Set the number of trees in the random forest
+        self.max_depth = max_depth      # Set the maximum depth of each decision tree
         
-        # Get the indices of numeric attributes (columns)
-        self.numerical_cols = set()
-        with open(file_loc, 'r') as f:
-            reader = csv.reader(f)
-            headers = next(reader)
-            for i in range(len(headers)):
+        self.numerical_cols = set()         # Initialize the set of indices of numeric attributes (columns)
+        with open(file_loc, 'r') as f:      # Open the file in read mode
+            reader = csv.reader(f)          # Create a CSV reader
+            headers = next(reader)          # Get the headers of the CSV file
+            for i in range(len(headers)):   # Loop over the indices of the headers
                 try:
-                    # Try to convert the first row (excluding label) to float
-                    float(next(reader)[i])
-                    self.numerical_cols.add(i)
+                    float(next(reader)[i])      # If successful, add the index to the set of numerical columns
+                    self.numerical_cols.add(i)  # Add the index to the set of numerical columns
                 except ValueError:
                     continue
 
-        # Loading data set
         print("reading the data")
         try:
-            with open(file_loc) as f:
-                next(f, None)
-                for line in csv.reader(f, delimiter=","):
-                    xline = []
-                    for i in range(len(line)):
-                        if i in self.numerical_cols:
-                            xline.append(ast.literal_eval(line[i]))
-                        else:
-                            xline.append(line[i])
+            with open(file_loc) as f:                       # Open the file
+                next(f, None)                               # Skip the header
+                for line in csv.reader(f, delimiter=","):   # Read the file line by line
+                    xline = []                  
+                    for i in range(len(line)):              # Loop over the indices of the line
+                        if i in self.numerical_cols:                # If the index is in the set of numerical columns
+                            xline.append(ast.literal_eval(line[i])) # Append the value to the input data features
+                        
+                        else:                                       # If the index is not in the set of numerical columns
+                            xline.append(line[i])                   # Append the value to the input data features    
 
-                    self.X.append(xline[:-1])
-                    self.y.append(xline[-1])
-                    self.XX.append(xline[:])
+                    self.X.append(xline[:-1])   # Append the input data features to the list of input data features
+                    self.y.append(xline[-1])    # Append the target value to the list of target values
+                    self.XX.append(xline[:])    # Append the input data features and target value to the list of input data features and target values
         except FileNotFoundError:
             print(f"File {file_loc} not found.")
             return None, None
@@ -222,6 +225,7 @@ class runRandomForest(object):
         """
         Resets the random forest object.
         """
+        # Reset the random forest object
         self.random_seed = 0
         self.forest_size = 10
         self.max_depth = 10
@@ -251,55 +255,37 @@ class runRandomForest(object):
             - The random forest object contains the trained random forest model.
             - The accuracy is calculated as the ratio of correctly predicted labels to the total number of labels.
         """
-        # start time
-        start = datetime.now()
+        start = datetime.now()  # Start time
 
-        # Initializing a random forest.
-        randomForest = RandomForest(self.forest_size,self.max_depth)
+        randomForest = RandomForest(self.forest_size,self.max_depth)    # Initialize the random forest object
  
-        # Creating the bootstrapping datasets
         print("creating the bootstrap datasets")
-        randomForest.bootstrapping(self.XX)
+        randomForest.bootstrapping(self.XX)         # Create the bootstrapped datasets
 
-        # Building trees in the forest
         print("fitting the forest")
-        randomForest.fitting()
+        randomForest.fitting()                      # Fit the decision trees to the bootstrapped datasets
+        y_predicted = randomForest.voting(self.X)   # Predict the target values for the input records
+        
+        print("Execution time: " + str(datetime.now() - start))
 
-        # Calculating an unbiased error estimation of the random forest based on out-of-bag (OOB) error estimate.
-        y_predicted = randomForest.voting(self.X)
+        # Calculate evaluation metrics
+        mse = np.mean((np.array(y_predicted) - np.array(self.y)) ** 2)  # Calculate the mean squared error (MSE): mean((y_true - y_pred)^2)
+        ssr = np.sum((np.array(y_predicted) - np.array(self.y)) ** 2)   # Calculate the sum of squared residuals (SSR): sum((y_true - y_pred)^2)
+        sst = np.sum((np.array(self.y) - np.mean(self.y)) ** 2)         # Calculate the total sum of squares (SST): sum((y_true - mean(y_true))^2)
+        r2 = 1 - (ssr / sst)                                            # Calculate the R^2 score: 1 - (SSR / SST)
+        mape = np.mean(np.abs((np.array(self.y) - 
+                               np.array(y_predicted)) / np.array(self.y))) * 100    # Calculate the mean absolute percentage error (MAPE): mean(abs((y_true - y_pred) / y_true)) * 100
+        mae = np.mean(np.abs(np.array(self.y) - np.array(y_predicted)))             # Mean Absolute Error (MAE): mean(abs(y_true - y_pred))
+        rmse = np.sqrt(np.mean((np.array(y_predicted) - np.array(self.y)) ** 2))    # Root Mean Squared Error (RMSE): sqrt(mean((y_true - y_pred)^2))
 
-        # Mean Squared Error (MSE)
-        mse = np.mean((np.array(y_predicted) - np.array(self.y)) ** 2)
+        # Print the evaluation metrics
         print("MSE: %.4f" % mse)
-
-        # R^2 Score
-        ssr = np.sum((np.array(y_predicted) - np.array(self.y)) ** 2)
-        sst = np.sum((np.array(self.y) - np.mean(self.y)) ** 2)
-        r2 = 1 - (ssr / sst)
         print("R^2 Score: %.4f" % r2)
-
-        # Mean Absolute Percentage Error (MAPE)
-        mape = np.mean(np.abs((np.array(self.y) - np.array(y_predicted)) / np.array(self.y))) * 100
         print("MAPE: %.4f%%" % mape)
-
-        # Mean Absolute Error (MAE)
-        mae = np.mean(np.abs(np.array(self.y) - np.array(y_predicted)))
         print("MAE: %.4f" % mae)
-
-        # Root Mean Squared Error (RMSE)
-        rmse = np.sqrt(np.mean((np.array(y_predicted) - np.array(self.y)) ** 2))
         print("RMSE: %.4f" % rmse)
 
-        stats = {
-            "MSE": mse,
-            "R^2": r2,
-            "MAPE": mape,
-            "MAE": mae,
-            "RMSE": rmse
-        }
-
-        # End time
-        print("Execution time: " + str(datetime.now() - start))
+        stats = {"MSE": mse,"R^2": r2,"MAPE": mape,"MAE": mae,"RMSE": rmse}
 
         return randomForest,stats
 
