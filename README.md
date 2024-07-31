@@ -16,7 +16,7 @@ This project includes implementations of custom random forest classifiers and re
   
 - `randomForestClassifier.py`: Implements a custom random forest classifier with utility functions for computing entropy, partitioning classes, and calculating information gain.
 
-- `randomForestClassifierPar.py`: Updated randomForestClassifier.py to implement multiprocessing
+- `randomForestClassifierPar.py`: Updated randomForestClassifier.py to implemented with multiprocessing for performance gain.
   
 - `randomForestRegressor.py`: Implements a custom random forest regressor with utility functions for computing variance, partitioning classes, and calculating information gain.
 
@@ -106,6 +106,13 @@ if __name__ == "__main__":
 - `RandomForestWithInfoGain`: Extends `RandomForest` to use information gain for splitting.
   
 - `runRandomForest`: Contains functions to run the random forest classifier.
+
+    
+**Performance on Wisconsin Breast Prognostic dataset by Forest Size**
+
+![image](https://raw.githubusercontent.com/SantiagoEnriqueGA/custom_ensemble_learning/main/vis/randomForestClassifier_time.png) 
+
+
 
 ## randomForestRegressor.py
 
